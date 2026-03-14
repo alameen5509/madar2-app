@@ -73,6 +73,9 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // TiDB: لا يدعم ascii_general_ci — نستخدم utf8mb4_bin لأعمدة GUID
+        modelBuilder.UseGuidCollation("utf8mb4_bin");
+
         // تطبيق جميع تهيئات الجداول من ملفات منفصلة (Modular Configuration)
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
@@ -513,7 +516,7 @@ public class AppDbContext : DbContext
 
             // Content قد يكون نصاً طويلاً - نُعيّن النوع صراحةً
             e.Property(n => n.Content)
-                .HasColumnType("nvarchar(max)")
+                .HasColumnType("longtext")
                 .HasDefaultValue(string.Empty);
 
             e.HasOne(n => n.User)
@@ -605,7 +608,7 @@ public class AppDbContext : DbContext
 
             e.Property(c => c.Title).IsRequired().HasMaxLength(200);
             e.Property(c => c.Content)
-                .HasColumnType("nvarchar(max)")
+                .HasColumnType("longtext")
                 .HasDefaultValue(string.Empty);
             e.Property(c => c.Color).HasMaxLength(7).HasDefaultValue("#1e293b");
 
@@ -632,11 +635,11 @@ public class AppDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(260);
 
-            // البيانات الثنائية المشفرة — varbinary(max)
+            // البيانات الثنائية المشفرة — longblob
             // الخادم لا يفك تشفيرها (Zero-Knowledge)
             e.Property(b => b.EncryptedData)
                 .IsRequired()
-                .HasColumnType("varbinary(max)")
+                .HasColumnType("longblob")
                 .HasComment("AES-256-GCM: Magic(4) + Version(1) + Salt(16) + IV(12) + Ciphertext");
 
             e.Property(b => b.Label)
@@ -661,7 +664,7 @@ public class AppDbContext : DbContext
             e.HasKey(ev => ev.Id);
 
             e.Property(ev => ev.EventType).IsRequired().HasMaxLength(30);
-            e.Property(ev => ev.Payload).HasColumnType("nvarchar(max)");
+            e.Property(ev => ev.Payload).HasColumnType("longtext");
             e.Property(ev => ev.SessionId).HasMaxLength(64);
 
             // فهرس رئيسي: استعلام "أحداث لوحة X منذ تاريخ Y"
@@ -669,8 +672,8 @@ public class AppDbContext : DbContext
                 .HasDatabaseName("IX_CanvasSyncEvents_BoardId_Timestamp");
 
             // نقطة انتهاء تلقائي: يمكن لاحقاً حذف الأحداث الأقدم من 30 يوم
+            // TiDB لا يدعم DEFAULT expressions لـ datetime(6) — القيمة تُضبط في الكود
             e.Property(ev => ev.Timestamp)
-                .HasDefaultValueSql("GETUTCDATE()")
                 .HasComment("UTC — يُستخدم في Delta Sync وConflict Resolution");
         });
     }
@@ -684,7 +687,7 @@ public class AppDbContext : DbContext
 
             e.Property(h => h.CheckType).IsRequired().HasMaxLength(60);
             e.Property(h => h.Status).IsRequired().HasMaxLength(20);
-            e.Property(h => h.Details).HasColumnType("nvarchar(max)");
+            e.Property(h => h.Details).HasColumnType("longtext");
 
             // فهرس للاستعلام الزمني السريع
             e.HasIndex(h => h.CheckedAt)

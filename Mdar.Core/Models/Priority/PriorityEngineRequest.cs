@@ -42,5 +42,5 @@ public sealed record PriorityEngineRequest
     public bool IncludeWeightBreakdown { get; init; } = false;
 
     /// <summary>الوقت الفعلي المستخدم بعد تطبيق القيمة الافتراضية.</summary>
-    internal DateTime EffectiveAsOf => AsOf ?? DateTime.UtcNow;
+    public DateTime EffectiveAsOf => AsOf ?? DateTime.UtcNow;
 }

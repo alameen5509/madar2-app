@@ -2,6 +2,7 @@ using Mdar.Core.Entities.Common;
 using Mdar.Core.Entities.Identity;
 using Mdar.Core.Entities.Notes;
 using Mdar.Core.Enums;
+using TaskStatus = Mdar.Core.Enums.TaskStatus;
 
 namespace Mdar.Core.Entities.Tasks;
 

@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// تحميل الإعدادات المحلية السرية (مستبعدة من git)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
+
 // ─── Database ──────────────────────────────────────────────────────────────
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;

@@ -1,5 +1,6 @@
 using Mdar.Core.Enums;
 using System.ComponentModel.DataAnnotations;
+using TaskStatus = Mdar.Core.Enums.TaskStatus;
 
 namespace Mdar.API.DTOs.Tasks;
 

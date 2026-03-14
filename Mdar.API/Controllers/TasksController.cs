@@ -3,6 +3,7 @@ using Mdar.API.DTOs.Tasks;
 using Mdar.API.Extensions;
 using Mdar.Core.Entities.Tasks;
 using Mdar.Core.Enums;
+using TaskStatus = Mdar.Core.Enums.TaskStatus;
 using Mdar.Core.Interfaces;
 using Mdar.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
