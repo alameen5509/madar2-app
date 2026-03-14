@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "cd Mdar.API && dotnet run --urls http://0.0.0.0:$PORT",
+    "healthcheckPath": "/api/health/status"
+  }
+}
