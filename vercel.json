@@ -27,8 +27,6 @@
     }
   ],
   "env": {
-    "ASPNETCORE_ENVIRONMENT": "Production",
-    "ConnectionStrings__DefaultConnection": "@tidb_connection_string",
-    "Anthropic__ApiKey": "@anthropic_api_key"
+    "ASPNETCORE_ENVIRONMENT": "Production"
   }
 }
