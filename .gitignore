@@ -1,0 +1,42 @@
+# ── .NET ─────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+.vs/
+*.suo
+*.userosscache
+*.sln.docstates
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ── EF Core ──────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ── نشر / Publish ────────────────────────────────────────────
+publish/
+*.nupkg
+*.snupkg
+
+# ── إعدادات محلية سرية ────────────────────────────────────────
+appsettings.Local.json
+appsettings.*.Local.json
+*.Development.json
+secrets.json
+
+# ── نظام التشغيل ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Node (إذا أُضيف Frontend منفصل مستقبلاً) ─────────────────
+node_modules/
+dist/
+.next/
+.nuxt/
+
+# ── مدار ─────────────────────────────────────────────────────
+exports/
+*.mdar.tmp

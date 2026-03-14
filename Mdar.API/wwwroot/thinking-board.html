@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مساحة التفكير — مدار</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/thinking-board.css" />
+</head>
+<body>
+
+  <!-- ── Auth Overlay ─────────────────────────────────── -->
+  <div id="auth-overlay" class="hidden">
+    <div class="auth-box">
+      <h2>🧠 مساحة التفكير</h2>
+      <p>أدخل رمز الوصول للمتابعة</p>
+      <input id="token-input" class="auth-input" type="password" placeholder="رمز الوصول..." />
+      <button id="login-btn" class="auth-btn">دخول</button>
+    </div>
+  </div>
+
+  <!-- ── Loading Overlay ──────────────────────────────── -->
+  <div id="loading-overlay" class="hidden">
+    <div class="loading-spinner"></div>
+    <span class="loading-text">جاري التحميل...</span>
+  </div>
+
+  <!-- ── Boards Selection Screen ──────────────────────── -->
+  <div id="boards-screen" class="hidden">
+    <div class="boards-header">
+      <h1>🧠 مساحة التفكير</h1>
+      <p>اختر لوحة أو أنشئ واحدة جديدة</p>
+    </div>
+    <div id="boards-list" class="boards-list"></div>
+    <div class="new-board-input-row">
+      <input id="new-board-title" class="new-board-input" type="text"
+             placeholder="اسم اللوحة الجديدة..." maxlength="100" />
+      <button id="create-board-btn" class="new-board-btn">+ إنشاء لوحة</button>
+    </div>
+  </div>
+
+  <!-- ── Top Navbar ────────────────────────────────────── -->
+  <nav id="top-nav">
+    <div class="nav-start">
+      <a href="/daily-ops.html" class="back-btn">← العودة</a>
+      <span id="board-title-display">مساحة التفكير</span>
+    </div>
+    <div class="nav-end">
+      <span id="save-indicator" class="save-indicator"></span>
+      <button id="add-card-btn" class="add-card-btn">
+        <span style="font-size:16px">+</span> بطاقة جديدة
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Side Toolbar ──────────────────────────────────── -->
+  <aside id="side-toolbar">
+    <div class="tool-group">
+      <span class="tool-label">نوع</span>
+      <button class="type-btn active" data-type="0" title="ملاحظة">📝</button>
+      <button class="type-btn"        data-type="1" title="فكرة">💡</button>
+      <button class="type-btn"        data-type="2" title="مهمة">✅</button>
+      <button class="type-btn"        data-type="3" title="سؤال">❓</button>
+    </div>
+    <div class="tool-sep"></div>
+    <div class="tool-group">
+      <button id="zoom-in-btn"    class="zoom-btn" title="تكبير">+</button>
+      <span   id="zoom-level"     style="font-size:10px;color:#475569;direction:ltr">100%</span>
+      <button id="zoom-out-btn"   class="zoom-btn" title="تصغير">−</button>
+      <div class="tool-sep"></div>
+      <button id="zoom-reset-btn" class="zoom-btn" title="إعادة التمركز">⌂</button>
+    </div>
+  </aside>
+
+  <!-- ── Infinite Canvas ───────────────────────────────── -->
+  <div id="board-viewport">
+    <div id="board-canvas"></div>
+  </div>
+
+  <!-- ── Toast ─────────────────────────────────────────── -->
+  <div id="toast"></div>
+
+  <script src="/js/thinking-board.js"></script>
+</body>
+</html>

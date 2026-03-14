@@ -1,0 +1,300 @@
+/* ══════════════════════════════════════════════════════
+   Thinking Board — مساحة التفكير اللانهائية
+   Font: Cairo | Direction: RTL | Theme: Dark
+   ══════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: #0f172a;
+  color: #f8fafc;
+  overflow: hidden;
+  height: 100vh;
+  direction: rtl;
+}
+
+/* ── Auth Overlay ──────────────────────────────────────── */
+#auth-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500;
+  backdrop-filter: blur(10px);
+}
+#auth-overlay.hidden { display: none; }
+
+.auth-box {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 36px 32px;
+  width: 340px;
+  display: flex; flex-direction: column; gap: 16px;
+  text-align: center;
+}
+.auth-box h2 { font-size: 22px; font-weight: 700; color: #f8fafc; }
+.auth-box p  { font-size: 13px; color: #94a3b8; }
+.auth-input {
+  background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+  padding: 11px 14px; color: #f8fafc;
+  font-family: 'Cairo', sans-serif; font-size: 14px;
+  text-align: center; outline: none; direction: ltr;
+  transition: border-color 0.2s;
+}
+.auth-input:focus { border-color: #3b82f6; }
+.auth-btn {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #fff; border: none; border-radius: 10px; padding: 12px;
+  font-family: 'Cairo', sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.auth-btn:hover { opacity: 0.9; }
+
+/* ── Loading Overlay ──────────────────────────────────── */
+#loading-overlay {
+  position: fixed; inset: 0;
+  background: #0f172a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; z-index: 400;
+}
+#loading-overlay.hidden { display: none; }
+.loading-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid #1e293b; border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-text { font-size: 14px; color: #64748b; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Boards Selection Screen ─────────────────────────── */
+#boards-screen {
+  position: fixed; inset: 0;
+  background: #0f172a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; z-index: 300; padding: 24px;
+}
+#boards-screen.hidden { display: none; }
+
+.boards-header { text-align: center; margin-bottom: 16px; }
+.boards-header h1 { font-size: 28px; font-weight: 700; color: #f8fafc; }
+.boards-header p  { font-size: 14px; color: #64748b; margin-top: 6px; }
+
+.boards-list {
+  width: 100%; max-width: 460px;
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 60vh; overflow-y: auto;
+}
+.board-item {
+  background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+  padding: 16px 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.15s, border-color 0.15s;
+}
+.board-item:hover { background: #263548; border-color: #3b82f6; }
+.board-item-title { font-size: 15px; font-weight: 600; color: #f1f5f9; }
+.board-item-meta  { font-size: 12px; color: #64748b; }
+
+.new-board-input-row {
+  display: flex; gap: 8px; width: 100%; max-width: 460px; margin-top: 8px;
+}
+.new-board-input {
+  flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+  padding: 10px 14px; color: #f8fafc;
+  font-family: 'Cairo', sans-serif; font-size: 14px; outline: none;
+  transition: border-color 0.2s;
+}
+.new-board-input:focus { border-color: #3b82f6; }
+.new-board-btn {
+  background: #1d4ed8; color: #fff; border: none; border-radius: 10px;
+  padding: 10px 20px; font-family: 'Cairo', sans-serif; font-size: 14px;
+  font-weight: 600; cursor: pointer; white-space: nowrap;
+  transition: background 0.2s;
+}
+.new-board-btn:hover { background: #2563eb; }
+
+/* ── Top Navbar ───────────────────────────────────────── */
+#top-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 54px;
+  background: rgba(15,23,42,0.95);
+  border-bottom: 1px solid #1e293b;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; z-index: 100; gap: 12px;
+  backdrop-filter: blur(8px);
+}
+.nav-start { display: flex; align-items: center; gap: 10px; }
+.nav-end   { display: flex; align-items: center; gap: 10px; }
+
+.back-btn {
+  text-decoration: none; color: #94a3b8; font-size: 13px;
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid #1e293b;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.back-btn:hover { background: #1e293b; color: #f8fafc; }
+
+#board-title-display {
+  font-size: 16px; font-weight: 700; color: #e2e8f0;
+  max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.save-indicator {
+  font-size: 12px; color: #64748b; min-width: 80px; text-align: center;
+  transition: color 0.3s;
+}
+.save-indicator.saving { color: #f59e0b; }
+.save-indicator.saved  { color: #22c55e; }
+
+.add-card-btn {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #fff; border: none; border-radius: 9px;
+  padding: 8px 16px; font-family: 'Cairo', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  white-space: nowrap; transition: opacity 0.2s, transform 0.1s;
+  display: flex; align-items: center; gap: 6px;
+}
+.add-card-btn:hover   { opacity: 0.9; }
+.add-card-btn:active  { transform: scale(0.97); }
+
+/* ── Side Toolbar (right side in RTL) ────────────────── */
+#side-toolbar {
+  position: fixed; top: 54px; right: 0; bottom: 0; width: 54px;
+  background: rgba(15,23,42,0.95);
+  border-left: 1px solid #1e293b;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 14px 0; gap: 6px; z-index: 90;
+  backdrop-filter: blur(8px);
+}
+.tool-group {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 100%; padding: 0 7px;
+}
+.tool-label {
+  font-size: 10px; color: #475569; text-align: center; margin-bottom: 2px;
+}
+.tool-sep {
+  width: 32px; height: 1px; background: #1e293b; margin: 6px 0;
+}
+.type-btn {
+  width: 40px; height: 40px;
+  border: 2px solid transparent; border-radius: 11px;
+  background: transparent; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+}
+.type-btn:hover  { background: #1e293b; }
+.type-btn.active { background: #1e293b; border-color: #3b82f6; }
+
+.zoom-btn {
+  width: 36px; height: 32px;
+  border: 1px solid #1e293b; border-radius: 8px;
+  background: transparent; color: #94a3b8;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.zoom-btn:hover { background: #1e293b; color: #f8fafc; }
+#zoom-level {
+  font-size: 10px; color: #475569; font-variant-numeric: tabular-nums;
+  text-align: center; direction: ltr;
+}
+
+/* ── Board Viewport ───────────────────────────────────── */
+#board-viewport {
+  position: fixed;
+  top: 54px; left: 0; right: 54px; bottom: 0;
+  overflow: hidden; cursor: grab;
+  background-color: #080f1e;
+  background-image:
+    radial-gradient(circle at 1px 1px, #1e293b 1px, transparent 0);
+  background-size: 40px 40px;
+}
+#board-viewport.panning { cursor: grabbing; }
+
+#board-canvas {
+  position: absolute; top: 0; left: 0;
+  width: 8000px; height: 8000px;
+  transform-origin: 0 0;
+}
+
+/* ── Thinking Cards ───────────────────────────────────── */
+.thinking-card {
+  position: absolute; border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35);
+  cursor: move; user-select: none; direction: rtl;
+  display: flex; flex-direction: column;
+  transition: box-shadow 0.2s, outline 0.1s;
+  overflow: visible;
+}
+.thinking-card:hover {
+  box-shadow: 0 14px 40px rgba(0,0,0,0.65), 0 4px 10px rgba(0,0,0,0.4);
+}
+.thinking-card.selected {
+  outline: 2px solid #3b82f6; outline-offset: 2px;
+}
+
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px 4px;
+}
+.card-type-icon { font-size: 13px; opacity: 0.75; }
+
+.card-del-btn {
+  width: 22px; height: 22px; border: none; border-radius: 6px;
+  background: rgba(255,255,255,0.08); color: #94a3b8;
+  cursor: pointer; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s, background 0.15s;
+}
+.thinking-card:hover .card-del-btn { opacity: 1; }
+.card-del-btn:hover { background: rgba(239,68,68,0.35); color: #fca5a5; }
+
+.card-title {
+  font-weight: 700; font-size: 14px; color: #f1f5f9;
+  padding: 2px 12px 6px;
+  outline: none; cursor: text;
+  font-family: 'Cairo', sans-serif; line-height: 1.4;
+  word-break: break-word;
+}
+.card-title:empty::before    { content: 'عنوان البطاقة'; color: #475569; }
+.card-title:focus             { background: rgba(255,255,255,0.04); border-radius: 6px; }
+
+.card-content {
+  flex: 1; font-size: 12px; color: #94a3b8;
+  padding: 0 12px 32px;
+  outline: none; cursor: text;
+  font-family: 'Cairo', sans-serif; line-height: 1.7;
+  word-break: break-word; overflow-wrap: break-word;
+}
+.card-content:empty::before   { content: 'اكتب أفكارك هنا...'; color: #334155; font-style: italic; }
+.card-content:focus            { background: rgba(255,255,255,0.03); border-radius: 6px; }
+
+/* Resize handle — bottom-right corner */
+.card-resize {
+  position: absolute; bottom: 5px; right: 5px; /* physical right */
+  width: 16px; height: 16px; cursor: se-resize;
+  opacity: 0; transition: opacity 0.15s;
+}
+.thinking-card:hover .card-resize { opacity: 1; }
+.card-resize::after {
+  content: '';
+  display: block; width: 10px; height: 10px;
+  border-right: 2px solid rgba(255,255,255,0.35);
+  border-bottom: 2px solid rgba(255,255,255,0.35);
+  border-radius: 0 0 3px 0;
+  position: absolute; bottom: 0; right: 0;
+}
+
+/* ── Toast Notification ───────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+  padding: 10px 20px; font-size: 13px; color: #e2e8f0;
+  z-index: 200; opacity: 0; transition: opacity 0.3s;
+  white-space: nowrap; pointer-events: none;
+}
+#toast.show { opacity: 1; }

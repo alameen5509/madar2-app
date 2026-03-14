@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>مدار — العمليات اليومية</title>
+
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { cairo: ['Cairo', 'sans-serif'] }
+                }
+            }
+        };
+    </script>
+
+    <!-- Daily Ops Stylesheet -->
+    <link rel="stylesheet" href="/css/daily-ops.css" />
+</head>
+<body class="font-cairo bg-slate-100 min-h-screen">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     AUTH OVERLAY — يظهر عند غياب التوكن
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="auth-overlay" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
+        <div class="text-5xl mb-4">🔐</div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-1">مرحباً بك في مدار</h1>
+        <p class="text-slate-500 text-sm mb-6">أدخل رمز JWT الخاص بك للمتابعة</p>
+
+        <input
+            id="token-input"
+            type="text"
+            placeholder="Bearer Token..."
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 mb-4 focus:outline-none focus:ring-2 focus:ring-slate-400 text-left ltr"
+            dir="ltr"
+        />
+        <button
+            onclick="App.handleTokenSubmit()"
+            class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition-colors"
+        >
+            دخول
+        </button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MAIN APP
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="app" class="hidden min-h-screen flex flex-col">
+
+    <!-- ── Period Header ──────────────────────────────────────────── -->
+    <header id="period-header" class="period-Duha">
+
+        <!-- Top bar: logo + clock + thinking board link -->
+        <div class="flex items-center justify-between px-4 pt-4 pb-2">
+            <span class="text-white/70 text-sm font-bold tracking-widest">مدار</span>
+            <div class="flex items-center gap-3">
+                <a href="/thinking-board.html"
+                   style="font-size:12px;color:rgba(255,255,255,0.65);text-decoration:none;
+                          background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:8px;
+                          transition:background 0.2s;white-space:nowrap;"
+                   onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                   onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    🧠 مساحة التفكير
+                </a>
+                <span id="live-clock" class="text-white/90 text-sm font-mono tabular-nums ltr" dir="ltr">--:--:--</span>
+            </div>
+        </div>
+
+        <!-- Period Display -->
+        <div id="period-display" class="flex items-center gap-4 px-4 pb-4">
+            <span class="period-emoji">☀️</span>
+            <div>
+                <div class="period-name">وقت الضحى</div>
+                <div class="period-subtext" id="next-prayer-countdown">جارٍ التحميل...</div>
+            </div>
+        </div>
+
+        <!-- Prayer Timeline -->
+        <div id="prayer-timeline" class="px-4 pb-4">
+            <p class="text-white/50 text-xs text-center py-2">جارٍ تحميل جدول الصلاة...</p>
+        </div>
+
+    </header>
+
+    <!-- ── Filter Bar ─────────────────────────────────────────────── -->
+    <div class="bg-white border-b border-slate-100 sticky top-0 z-10 shadow-sm">
+
+        <!-- Context Chips -->
+        <div class="flex items-center gap-2 px-4 pt-3 pb-2 overflow-x-auto no-scrollbar">
+            <span class="text-xs text-slate-400 font-bold shrink-0 ml-1">السياق:</span>
+            <button class="ctx-chip active" data-ctx="Anywhere"
+                    onclick="App.setContextFilter('Anywhere')">🌐 الكل</button>
+            <button class="ctx-chip" data-ctx="Home"
+                    onclick="App.setContextFilter('Home')">🏠 المنزل</button>
+            <button class="ctx-chip" data-ctx="Office"
+                    onclick="App.setContextFilter('Office')">💼 المكتب</button>
+            <button class="ctx-chip" data-ctx="Outside"
+                    onclick="App.setContextFilter('Outside')">🚶 خارج</button>
+            <button class="ctx-chip" data-ctx="Online"
+                    onclick="App.setContextFilter('Online')">💻 أونلاين</button>
+        </div>
+
+        <!-- Period Tabs -->
+        <div class="flex items-center gap-1 px-4 pb-3 overflow-x-auto no-scrollbar">
+            <span class="text-xs text-slate-400 font-bold shrink-0 ml-1">الفترة:</span>
+            <button class="period-tab active" data-period="current"
+                    onclick="App.setPeriodFilter('current')">الحالية</button>
+            <button class="period-tab" data-period="AfterFajr"
+                    onclick="App.setPeriodFilter('AfterFajr')">🌙 فجر</button>
+            <button class="period-tab" data-period="Duha"
+                    onclick="App.setPeriodFilter('Duha')">☀️ ضحى</button>
+            <button class="period-tab" data-period="AfterDhuhr"
+                    onclick="App.setPeriodFilter('AfterDhuhr')">🌤 ظهر</button>
+            <button class="period-tab" data-period="AfterAsr"
+                    onclick="App.setPeriodFilter('AfterAsr')">🌿 عصر</button>
+            <button class="period-tab" data-period="AfterMaghrib"
+                    onclick="App.setPeriodFilter('AfterMaghrib')">🌅 مغرب</button>
+            <button class="period-tab" data-period="AfterIsha"
+                    onclick="App.setPeriodFilter('AfterIsha')">🌃 عشاء</button>
+        </div>
+
+    </div>
+
+    <!-- ── Stats Bar ──────────────────────────────────────────────── -->
+    <div id="stats-bar" class="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-100">
+        <span class="text-xs text-slate-400">جارٍ التحميل...</span>
+    </div>
+
+    <!-- ── Tasks Container ────────────────────────────────────────── -->
+    <main id="tasks-container" class="flex-1 p-4">
+        <!-- Populated by daily-ops.js -->
+    </main>
+
+</div><!-- /#app -->
+
+<!-- ══════════════════════════════════════════════════════════════════
+     FLOATING ACTION BUTTON
+     ══════════════════════════════════════════════════════════════════ -->
+<button id="fab-btn" aria-label="إضافة مهمة سريعة">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5"
+         stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5"  y1="12" x2="19" y2="12"/>
+    </svg>
+    <span>إضافة مهمة</span>
+</button>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: QUICK ADD
+     ══════════════════════════════════════════════════════════════════ -->
+
+<!-- Backdrop -->
+<div id="modal-backdrop" onclick="App.closeModal()"></div>
+
+<!-- Bottom Sheet -->
+<div id="modal-sheet" role="dialog" aria-modal="true" aria-label="إضافة مهمة سريعة">
+
+    <!-- Handle -->
+    <div class="flex justify-center pt-3 pb-1">
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+    </div>
+
+    <div class="px-5 pb-8 pt-2">
+
+        <!-- Title -->
+        <h2 class="text-lg font-bold text-slate-800 mb-5">إضافة مهمة سريعة</h2>
+
+        <!-- Task Title Input -->
+        <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-500 mb-1.5">عنوان المهمة <span class="text-red-400">*</span></label>
+            <input
+                id="new-task-title"
+                type="text"
+                placeholder="ماذا تريد أن تُنجز؟"
+                maxlength="200"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 placeholder-slate-300"
+            />
+        </div>
+
+        <!-- Priority Selector -->
+        <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-500 mb-2">الأولوية</label>
+            <div class="flex gap-2">
+                <button class="priority-btn" data-priority="Critical">🔴 حرجة</button>
+                <button class="priority-btn" data-priority="High">🟠 عالية</button>
+                <button class="priority-btn selected" data-priority="Medium">🟡 متوسطة</button>
+                <button class="priority-btn" data-priority="Low">🟢 منخفضة</button>
+            </div>
+        </div>
+
+        <!-- Row: Due Date + Prayer Period -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+
+            <!-- Due Date -->
+            <div>
+                <label for="new-task-due" class="block text-xs font-bold text-slate-500 mb-1.5">تاريخ الاستحقاق</label>
+                <input
+                    id="new-task-due"
+                    type="date"
+                    class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                    dir="ltr"
+                />
+            </div>
+
+            <!-- Prayer Period -->
+            <div>
+                <label for="new-task-period" class="block text-xs font-bold text-slate-500 mb-1.5">فترة الصلاة</label>
+                <select
+                    id="new-task-period"
+                    class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white"
+                >
+                    <option value="">أي فترة</option>
+                    <option value="AfterFajr">🌙 بعد الفجر</option>
+                    <option value="Duha">☀️ وقت الضحى</option>
+                    <option value="AfterDhuhr">🌤 بعد الظهر</option>
+                    <option value="AfterAsr">🌿 بعد العصر</option>
+                    <option value="AfterMaghrib">🌅 بعد المغرب</option>
+                    <option value="AfterIsha">🌃 بعد العشاء</option>
+                </select>
+            </div>
+
+        </div>
+
+        <!-- Pomodoro Toggle -->
+        <div class="flex items-center justify-between mb-6 bg-slate-50 rounded-xl px-4 py-3">
+            <div>
+                <p class="text-sm font-bold text-slate-700">قابلة للطماطم 🍅</p>
+                <p class="text-xs text-slate-400">يمكن تقسيمها بتقنية Pomodoro</p>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="new-task-pomodoro" checked />
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+            id="modal-submit-btn"
+            onclick="App.submitQuickAdd()"
+            class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-700 active:scale-95 transition-all text-sm"
+        >
+            + إضافة المهمة
+        </button>
+
+    </div><!-- /.px-5 -->
+</div><!-- /#modal-sheet -->
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TOAST NOTIFICATIONS
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SCRIPTS
+     ══════════════════════════════════════════════════════════════════ -->
+<script src="/js/api-client.js"></script>
+<script src="/js/daily-ops.js"></script>
+
+</body>
+</html>

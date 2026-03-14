@@ -1,0 +1,509 @@
+/* ═══════════════════════════════════════════════════════════════
+   Mdar Daily Operations — Custom Styles
+   RTL-first, prayer-period themed, mobile-ready
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ─── CSS Variables: Prayer Period Themes ──────────────────────── */
+:root {
+  --font-main: 'Cairo', sans-serif;
+  --radius-card: 1.25rem;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* AfterFajr — ليل نهايته */
+  --fajr-from: #1e1b4b; --fajr-to: #4338ca; --fajr-accent: #818cf8;
+
+  /* Duha — ذهب الصباح */
+  --duha-from: #78350f; --duha-to: #d97706; --duha-accent: #fbbf24;
+
+  /* AfterDhuhr — برتقالي الظهيرة */
+  --dhuhr-from: #7c2d12; --dhuhr-to: #ea580c; --dhuhr-accent: #fb923c;
+
+  /* AfterAsr — أخضر العصر */
+  --asr-from:   #064e3b; --asr-to:   #059669; --asr-accent:   #34d399;
+
+  /* AfterMaghrib — ورد الغروب */
+  --maghrib-from: #881337; --maghrib-to: #e11d48; --maghrib-accent: #fb7185;
+
+  /* AfterIsha — أزرق الليل */
+  --isha-from: #0f172a; --isha-to: #1d4ed8; --isha-accent: #60a5fa;
+}
+
+/* ─── Base ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-main);
+  background: #f1f5f9;
+  min-height: 100vh;
+  color: #1e293b;
+  direction: rtl;
+}
+
+/* ─── Period Header ────────────────────────────────────────────── */
+#period-header {
+  background: linear-gradient(135deg, var(--duha-from), var(--duha-to));
+  transition: background 1.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#period-header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(255,255,255,.08), transparent 70%);
+  pointer-events: none;
+}
+
+#period-header.period-AfterFajr {
+  background: linear-gradient(135deg, var(--fajr-from), var(--fajr-to));
+}
+#period-header.period-Duha {
+  background: linear-gradient(135deg, var(--duha-from), var(--duha-to));
+}
+#period-header.period-AfterDhuhr {
+  background: linear-gradient(135deg, var(--dhuhr-from), var(--dhuhr-to));
+}
+#period-header.period-AfterAsr {
+  background: linear-gradient(135deg, var(--asr-from), var(--asr-to));
+}
+#period-header.period-AfterMaghrib {
+  background: linear-gradient(135deg, var(--maghrib-from), var(--maghrib-to));
+}
+#period-header.period-AfterIsha {
+  background: linear-gradient(135deg, var(--isha-from), var(--isha-to));
+}
+
+/* ─── Prayer Timeline ──────────────────────────────────────────── */
+.timeline-track {
+  height: 6px;
+  background: rgba(255,255,255,.2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.timeline-fill {
+  height: 100%;
+  background: rgba(255,255,255,.8);
+  border-radius: 99px;
+  transition: width 1s ease;
+}
+
+.timeline-marker {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.5);
+  border: 2px solid rgba(255,255,255,.8);
+  transform: translateY(-50%);
+  transition: var(--transition);
+}
+
+.timeline-marker.active {
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.3);
+}
+
+/* ─── Period Tabs ──────────────────────────────────────────────── */
+.period-tab {
+  padding: .375rem .75rem;
+  border-radius: 99px;
+  font-size: .75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  color: #64748b;
+  background: transparent;
+  border: 1.5px solid #e2e8f0;
+}
+
+.period-tab.active {
+  background: #1e293b;
+  color: #fff;
+  border-color: #1e293b;
+}
+
+/* ─── Context Filter Chips ─────────────────────────────────────── */
+.ctx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .375rem .875rem;
+  border-radius: 99px;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.ctx-chip:hover { border-color: #94a3b8; background: #f8fafc; }
+
+.ctx-chip.active {
+  background: #0f172a;
+  color: #fff;
+  border-color: #0f172a;
+}
+
+/* ─── Task Card ────────────────────────────────────────────────── */
+.task-card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  border-right: 5px solid #e2e8f0;
+  padding: 1rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+
+.task-card.priority-Critical { border-right-color: #ef4444; }
+.task-card.priority-High     { border-right-color: #f97316; }
+.task-card.priority-Medium   { border-right-color: #3b82f6; }
+.task-card.priority-Low      { border-right-color: #94a3b8; }
+
+.task-card.completing {
+  opacity: 0;
+  transform: scale(.95);
+}
+
+/* Priority Badges */
+.badge-Critical { background: #fef2f2; color: #b91c1c; }
+.badge-High     { background: #fff7ed; color: #c2410c; }
+.badge-Medium   { background: #eff6ff; color: #1d4ed8; }
+.badge-Low      { background: #f8fafc; color: #64748b; }
+
+/* Weight Score chip */
+.weight-chip {
+  font-size: .7rem;
+  font-weight: 700;
+  padding: .2rem .5rem;
+  border-radius: 99px;
+  background: #f1f5f9;
+  color: #6366f1;
+}
+
+/* ─── Rank Badge ───────────────────────────────────────────────── */
+.rank-badge {
+  width: 1.5rem; height: 1.5rem;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .65rem;
+  font-weight: 800;
+}
+
+.rank-1 { background: #fef08a; color: #713f12; }
+.rank-2 { background: #e2e8f0; color: #334155; }
+.rank-3 { background: #fcd9b6; color: #7c2d12; }
+.rank-other { background: #f1f5f9; color: #64748b; }
+
+/* ─── Action Buttons on Card ───────────────────────────────────── */
+.btn-start {
+  flex: 1;
+  padding: .5rem;
+  border-radius: .75rem;
+  font-size: .75rem;
+  font-weight: 700;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-start:hover { background: #4f46e5; }
+.btn-start:active { transform: scale(.97); }
+
+.btn-done {
+  flex: 1;
+  padding: .5rem;
+  border-radius: .75rem;
+  font-size: .75rem;
+  font-weight: 700;
+  background: #fff;
+  color: #16a34a;
+  border: 1.5px solid #16a34a;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-done:hover { background: #f0fdf4; }
+.btn-done:active { transform: scale(.97); }
+
+/* ─── Skeleton Loader ──────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: .75rem;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── FAB ──────────────────────────────────────────────────────── */
+#fab-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .875rem 1.5rem;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 99px;
+  font-family: var(--font-main);
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(15,23,42,.25);
+  transition: var(--transition);
+  z-index: 40;
+}
+
+#fab-btn:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(15,23,42,.3);
+}
+
+#fab-btn:active { transform: translateY(0); }
+
+.fab-icon {
+  font-size: 1.4rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* ─── Modal Bottom Sheet ───────────────────────────────────────── */
+#modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 50;
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+
+#modal-backdrop.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#modal-sheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-radius: 1.5rem 1.5rem 0 0;
+  padding: 1.5rem;
+  max-height: 92vh;
+  overflow-y: auto;
+  z-index: 51;
+  transform: translateY(100%);
+  transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#modal-sheet.visible {
+  transform: translateY(0);
+}
+
+.modal-handle {
+  width: 2.5rem; height: .25rem;
+  background: #e2e8f0;
+  border-radius: 99px;
+  margin: 0 auto .75rem;
+}
+
+/* ─── Form Controls ────────────────────────────────────────────── */
+.form-label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: .375rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: .75rem 1rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: .875rem;
+  font-family: var(--font-main);
+  font-size: .9rem;
+  color: #1e293b;
+  background: #fff;
+  transition: var(--transition);
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+}
+
+/* Priority Radio Buttons */
+.priority-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .5rem;
+}
+
+.priority-btn {
+  padding: .5rem .25rem;
+  border-radius: .75rem;
+  font-size: .75rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid #e2e8f0;
+  background: #fff;
+  transition: var(--transition);
+  color: #64748b;
+}
+
+.priority-btn:has(input:checked),
+.priority-btn.selected {
+  border-color: currentColor;
+}
+
+.priority-btn.p-Low.selected     { background: #f8fafc; color: #64748b; border-color: #94a3b8; }
+.priority-btn.p-Medium.selected  { background: #eff6ff; color: #1d4ed8; border-color: #3b82f6; }
+.priority-btn.p-High.selected    { background: #fff7ed; color: #c2410c; border-color: #f97316; }
+.priority-btn.p-Critical.selected{ background: #fef2f2; color: #b91c1c; border-color: #ef4444; }
+
+/* Toggle Switch */
+.toggle-switch { position: relative; display: inline-block; width: 3rem; height: 1.6rem; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #e2e8f0;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  left: .2rem; bottom: .2rem;
+  width: 1.2rem; height: 1.2rem;
+  background: #fff;
+  border-radius: 50%;
+  transition: var(--transition);
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.toggle-switch input:checked + .toggle-slider { background: #6366f1; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(1.4rem); }
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 1rem;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  font-family: var(--font-main);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+}
+.btn-submit:hover { background: #1e293b; }
+.btn-submit:active { transform: scale(.98); }
+.btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ─── Toast Notifications ──────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 6rem;
+  left: 1rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: .5rem;
+  pointer-events: none;
+}
+
+.toast {
+  padding: .75rem 1.25rem;
+  border-radius: .875rem;
+  font-size: .85rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  display: flex; align-items: center; gap: .5rem;
+  animation: toastIn .3s ease forwards;
+  pointer-events: all;
+  max-width: 18rem;
+}
+
+.toast-success { background: #0f172a; color: #fff; }
+.toast-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.toast-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+@keyframes toastIn {
+  from { transform: translateX(-1rem); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes toastOut {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(-1rem); opacity: 0; }
+}
+
+/* ─── Empty State ──────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #94a3b8;
+}
+
+.empty-state .empty-icon { font-size: 4rem; margin-bottom: 1rem; display: block; }
+
+/* ─── Scrollbar ────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+/* ─── Auth Overlay ─────────────────────────────────────────────── */
+#auth-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,.95);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 24rem;
+}
+
+/* ─── Responsive Grid ──────────────────────────────────────────── */
+.tasks-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .875rem;
+}
+
+@media (min-width: 640px)  { .tasks-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .tasks-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1280px) { .tasks-grid { grid-template-columns: repeat(4, 1fr); } }

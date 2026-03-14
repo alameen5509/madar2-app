@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "framework": null,
+  "buildCommand": "cd Mdar.API && dotnet publish -c Release -o ./publish",
+  "outputDirectory": "Mdar.API/publish",
+  "devCommand": "cd Mdar.API && dotnet run --urls http://localhost:5000",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/Mdar.API/publish/Mdar.API.dll"
+    },
+    {
+      "src": "/hubs/(.*)",
+      "dest": "/Mdar.API/publish/Mdar.API.dll"
+    },
+    {
+      "src": "^/$",
+      "dest": "/Frontend/index.html"
+    },
+    {
+      "src": "/(.*.html)",
+      "dest": "/Frontend/$1"
+    },
+    {
+      "src": "/(.*.js)",
+      "dest": "/Frontend/$1"
+    }
+  ],
+  "env": {
+    "ASPNETCORE_ENVIRONMENT": "Production",
+    "ConnectionStrings__DefaultConnection": "@tidb_connection_string",
+    "Anthropic__ApiKey": "@anthropic_api_key"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"C:\\\\Users\\\\X1 YOGA\\\\Desktop\\\\المشاريع الرقمية\\\\mdar 2\" -name \"*.csproj\" -o -name \"*.sln\" -o -name \"*.cs\" 2>/dev/null | grep -v \".vs\" | head -50)",
+      "Bash(find:*)",
+      "Bash(dir:*)"
+    ]
+  }
+}

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>مدار — لوحة الأولويات</title>
+
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { cairo: ['Cairo','sans-serif'] } } }
+        };
+    </script>
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   Base
+   ═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: 'Cairo', sans-serif; }
+
+/* ── Period Header Themes ─────────────────────────────────── */
+#period-header {
+    transition: background .6s ease;
+    padding-bottom: 1.25rem;
+}
+#period-header.period-AfterFajr  { background: linear-gradient(135deg,#1a1a2e,#16213e); }
+#period-header.period-Duha       { background: linear-gradient(135deg,#f59e0b,#d97706); }
+#period-header.period-AfterDhuhr { background: linear-gradient(135deg,#0ea5e9,#0284c7); }
+#period-header.period-AfterAsr   { background: linear-gradient(135deg,#10b981,#059669); }
+#period-header.period-AfterMaghrib{ background: linear-gradient(135deg,#f97316,#ea580c); }
+#period-header.period-AfterIsha  { background: linear-gradient(135deg,#6d28d9,#4c1d95); }
+
+.period-emoji { font-size: 2.8rem; line-height: 1; }
+.period-name  { color:#fff; font-size:1.25rem; font-weight:900; }
+.period-subtext { color:rgba(255,255,255,.65); font-size:.8rem; margin-top:.15rem; }
+
+/* ── Context Chips ────────────────────────────────────────── */
+.ctx-chip {
+    padding: .3rem .85rem;
+    border-radius: 9999px;
+    font-size: .78rem;
+    font-weight: 700;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .15s;
+}
+.ctx-chip:hover  { border-color:#94a3b8; color:#334155; }
+.ctx-chip.active { background:#1e293b; color:#fff; border-color:#1e293b; }
+
+/* ── Task Cards Grid ──────────────────────────────────────── */
+.tasks-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+@media(min-width:640px)  { .tasks-grid { grid-template-columns: repeat(2,1fr); } }
+@media(min-width:1024px) { .tasks-grid { grid-template-columns: repeat(3,1fr); } }
+@media(min-width:1280px) { .tasks-grid { grid-template-columns: repeat(4,1fr); } }
+
+/* ── Task Card ────────────────────────────────────────────── */
+.task-card {
+    background: #fff;
+    border-radius: 1.1rem;
+    padding: 1rem;
+    border: 1.5px solid #f1f5f9;
+    border-right: 4px solid #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow .2s, transform .2s, opacity .3s;
+}
+.task-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.07); transform: translateY(-2px); }
+.task-card.completing { opacity: 0; transform: scale(.95); }
+
+.task-card.priority-Critical { border-right-color: #ef4444; }
+.task-card.priority-High     { border-right-color: #f97316; }
+.task-card.priority-Medium   { border-right-color: #eab308; }
+.task-card.priority-Low      { border-right-color: #22c55e; }
+
+/* ── Priority Badges ──────────────────────────────────────── */
+.badge-Critical { background:#fee2e2; color:#b91c1c; }
+.badge-High     { background:#ffedd5; color:#c2410c; }
+.badge-Medium   { background:#fef9c3; color:#a16207; }
+.badge-Low      { background:#dcfce7; color:#15803d; }
+
+/* ── Rank Badge ───────────────────────────────────────────── */
+.rank-badge {
+    width: 1.6rem; height: 1.6rem;
+    border-radius: 9999px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .72rem; font-weight: 900;
+}
+.rank-1     { background:#fef08a; color:#713f12; }
+.rank-2     { background:#e2e8f0; color:#334155; }
+.rank-3     { background:#fed7aa; color:#7c2d12; }
+.rank-other { background:#f1f5f9; color:#94a3b8; }
+
+/* ── Weight Chip ──────────────────────────────────────────── */
+.weight-chip {
+    font-size: .7rem; font-weight: 700;
+    background: #f1f5f9; color: #475569;
+    padding: .15rem .55rem;
+    border-radius: 9999px;
+}
+
+/* ── Action Buttons ───────────────────────────────────────── */
+.btn-start {
+    flex: 1;
+    padding: .5rem .75rem;
+    background: #0f172a; color: #fff;
+    border-radius: .75rem;
+    font-size: .8rem; font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+}
+.btn-start:hover { background: #1e3a5f; }
+.btn-done {
+    flex: 1;
+    padding: .5rem .75rem;
+    background: #f0fdf4; color: #15803d;
+    border: 1.5px solid #bbf7d0;
+    border-radius: .75rem;
+    font-size: .8rem; font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
+}
+.btn-done:hover { background: #dcfce7; }
+
+/* ── Skeleton ─────────────────────────────────────────────── */
+@keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: .5rem;
+}
+
+/* ── Empty State ──────────────────────────────────────────── */
+.empty-state {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 4rem 1rem; text-align: center;
+}
+.empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
+/* ── FAB ──────────────────────────────────────────────────── */
+#fab-btn {
+    position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 30;
+    display: flex; align-items: center; gap: .5rem;
+    background: #0f172a; color: #fff;
+    padding: .85rem 1.25rem;
+    border-radius: 9999px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700; font-size: .9rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    border: none;
+}
+#fab-btn:hover  { transform: scale(1.04); box-shadow: 0 6px 28px rgba(0,0,0,.3); }
+#fab-btn:active { transform: scale(.97); }
+
+/* ── Modal ────────────────────────────────────────────────── */
+#modal-backdrop {
+    display: none;
+    position: fixed; inset: 0; z-index: 40;
+    background: rgba(0,0,0,.45);
+    backdrop-filter: blur(3px);
+}
+#modal-backdrop.visible { display: block; }
+
+#modal-sheet {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    background: #fff;
+    border-radius: 1.5rem 1.5rem 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform .35s cubic-bezier(.32,.72,0,1);
+}
+#modal-sheet.visible { transform: translateY(0); }
+
+/* ── Priority Selector in Modal ───────────────────────────── */
+.priority-btn {
+    flex: 1;
+    padding: .45rem .5rem;
+    border-radius: .6rem;
+    font-family: 'Cairo', sans-serif;
+    font-size: .78rem; font-weight: 700;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc; color: #64748b;
+    cursor: pointer;
+    transition: all .15s;
+    text-align: center;
+}
+.priority-btn.selected           { background: #1e293b; color: #fff; border-color: #1e293b; }
+.priority-btn[data-priority="Critical"].selected { background: #b91c1c; border-color: #b91c1c; }
+.priority-btn[data-priority="High"].selected     { background: #c2410c; border-color: #c2410c; }
+.priority-btn[data-priority="Low"].selected      { background: #15803d; border-color: #15803d; }
+
+/* ── Toggle Switch ────────────────────────────────────────── */
+.toggle-switch { position:relative; display:inline-block; width:48px; height:26px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider {
+    position:absolute; inset:0;
+    background:#e2e8f0; border-radius:9999px;
+    cursor:pointer; transition:.25s;
+}
+.toggle-slider::before {
+    content:'';
+    position:absolute; left:3px; bottom:3px;
+    width:20px; height:20px;
+    background:#fff; border-radius:50%;
+    transition:.25s;
+    box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.toggle-switch input:checked + .toggle-slider { background:#0f172a; }
+.toggle-switch input:checked + .toggle-slider::before { transform:translateX(22px); }
+
+/* ── Toasts ───────────────────────────────────────────────── */
+#toast-container {
+    position: fixed; bottom: 5rem; left: 1rem; z-index: 100;
+    display: flex; flex-direction: column; gap: .5rem;
+    pointer-events: none;
+}
+.toast {
+    padding: .65rem 1.1rem;
+    border-radius: .85rem;
+    font-family: 'Cairo', sans-serif;
+    font-size: .82rem; font-weight: 700;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    max-width: 320px;
+    animation: toastIn .3s ease;
+    pointer-events: auto;
+}
+@keyframes toastIn  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+@keyframes toastOut { from{opacity:1;transform:none} to{opacity:0;transform:translateY(8px)} }
+.toast-success { background:#dcfce7; color:#15803d; }
+.toast-error   { background:#fee2e2; color:#b91c1c; }
+.toast-info    { background:#e0f2fe; color:#0369a1; }
+
+/* ── No scrollbar for filter rows ────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+
+/* ── Auth Overlay ─────────────────────────────────────────── */
+#auth-overlay input.ltr { direction: ltr; text-align: left; }
+
+/* ── Offline State ────────────────────────────────────────── */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="font-cairo bg-slate-100 min-h-screen">
+
+<!-- ══════════════════════════════════════════════════════════
+     AUTH OVERLAY
+     ══════════════════════════════════════════════════════════ -->
+<div id="auth-overlay" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-6">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
+        <div class="text-5xl mb-4">🔐</div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-1">مرحباً في مدار</h1>
+        <p class="text-slate-500 text-sm mb-6">أدخل رمز JWT للمتابعة</p>
+        <input
+            id="token-input"
+            type="text"
+            placeholder="Bearer Token..."
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 mb-4 focus:outline-none focus:ring-2 focus:ring-slate-400 ltr"
+            dir="ltr"
+            onkeydown="if(event.key==='Enter') App.handleTokenSubmit()"
+        />
+        <button
+            onclick="App.handleTokenSubmit()"
+            class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition-colors"
+        >دخول</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN APP
+     ══════════════════════════════════════════════════════════ -->
+<div id="app" class="hidden min-h-screen flex flex-col">
+
+    <!-- ── Period Header ──────────────────────────────────── -->
+    <header id="period-header" class="period-Duha">
+        <div class="flex items-center justify-between px-4 pt-4 pb-2">
+            <span class="text-white/70 text-sm font-bold tracking-widest">مدار ⚡</span>
+            <span id="live-clock" class="text-white/90 text-sm font-mono tabular-nums" dir="ltr">--:--:--</span>
+        </div>
+        <div id="period-display" class="flex items-center gap-4 px-4 pb-4">
+            <span class="period-emoji">☀️</span>
+            <div>
+                <div class="period-name">جارٍ التحميل...</div>
+                <div class="period-subtext">لوحة الأولويات الذكية</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── Filter Bar ─────────────────────────────────────── -->
+    <div class="bg-white border-b border-slate-100 sticky top-0 z-10 shadow-sm">
+        <div class="flex items-center gap-2 px-4 py-3 overflow-x-auto no-scrollbar">
+            <span class="text-xs text-slate-400 font-bold shrink-0 ml-1">السياق:</span>
+            <button class="ctx-chip active" data-ctx="Anywhere"  onclick="App.setContextFilter('Anywhere')">🌐 الكل</button>
+            <button class="ctx-chip"        data-ctx="Home"      onclick="App.setContextFilter('Home')">🏠 المنزل</button>
+            <button class="ctx-chip"        data-ctx="Office"    onclick="App.setContextFilter('Office')">💼 المكتب</button>
+            <button class="ctx-chip"        data-ctx="Outside"   onclick="App.setContextFilter('Outside')">🚶 خارج</button>
+            <button class="ctx-chip"        data-ctx="Online"    onclick="App.setContextFilter('Online')">💻 أونلاين</button>
+        </div>
+    </div>
+
+    <!-- ── Stats Bar ──────────────────────────────────────── -->
+    <div id="stats-bar" class="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-100">
+        <span class="text-xs text-slate-400">جارٍ التحميل...</span>
+    </div>
+
+    <!-- ── Tasks ──────────────────────────────────────────── -->
+    <main id="tasks-container" class="flex-1 p-4">
+        <!-- populated by JS -->
+    </main>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     FAB
+     ══════════════════════════════════════════════════════════ -->
+<button id="fab-btn" aria-label="إضافة مهمة">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    إضافة مهمة
+</button>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — QUICK ADD
+     ══════════════════════════════════════════════════════════ -->
+<div id="modal-backdrop"></div>
+
+<div id="modal-sheet" role="dialog" aria-modal="true">
+    <div class="flex justify-center pt-3 pb-1">
+        <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+    </div>
+    <div class="px-5 pb-8 pt-2">
+        <h2 class="text-lg font-bold text-slate-800 mb-5">مهمة جديدة</h2>
+
+        <!-- Title -->
+        <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-500 mb-1.5">
+                عنوان المهمة <span class="text-red-400">*</span>
+            </label>
+            <input
+                id="new-task-title"
+                type="text"
+                placeholder="ماذا تريد أن تُنجز؟"
+                maxlength="300"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 placeholder-slate-300"
+            />
+        </div>
+
+        <!-- Priority -->
+        <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-500 mb-2">الأولوية</label>
+            <div class="flex gap-2">
+                <button class="priority-btn" data-priority="Critical">🔴 حرجة</button>
+                <button class="priority-btn" data-priority="High">🟠 عالية</button>
+                <button class="priority-btn selected" data-priority="Medium">🟡 متوسطة</button>
+                <button class="priority-btn" data-priority="Low">🟢 منخفضة</button>
+            </div>
+        </div>
+
+        <!-- Due Date + Prayer Period -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+                <label for="new-task-due" class="block text-xs font-bold text-slate-500 mb-1.5">الاستحقاق</label>
+                <input id="new-task-due" type="date" dir="ltr"
+                    class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+            </div>
+            <div>
+                <label for="new-task-period" class="block text-xs font-bold text-slate-500 mb-1.5">فترة الصلاة</label>
+                <select id="new-task-period"
+                    class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white">
+                    <option value="">أي فترة</option>
+                    <option value="AfterFajr">🌙 بعد الفجر</option>
+                    <option value="Duha">☀️ وقت الضحى</option>
+                    <option value="AfterDhuhr">🌤 بعد الظهر</option>
+                    <option value="AfterAsr">🌿 بعد العصر</option>
+                    <option value="AfterMaghrib">🌅 بعد المغرب</option>
+                    <option value="AfterIsha">🌃 بعد العشاء</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Context Tag + Estimated Pomodoros -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+                <label for="new-task-context" class="block text-xs font-bold text-slate-500 mb-1.5">السياق المكاني</label>
+                <select id="new-task-context"
+                    class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white">
+                    <option value="Anywhere">🌐 أي مكان</option>
+                    <option value="Home">🏠 المنزل</option>
+                    <option value="Office">💼 المكتب</option>
+                    <option value="Outside">🚶 خارج</option>
+                    <option value="Online">💻 أونلاين</option>
+                </select>
+            </div>
+            <div>
+                <label for="new-task-pomodoros" class="block text-xs font-bold text-slate-500 mb-1.5">عدد الطماطم 🍅</label>
+                <input id="new-task-pomodoros" type="number" min="1" max="20" placeholder="مثال: 2"
+                    class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+            </div>
+        </div>
+
+        <!-- Pomodoro Toggle -->
+        <div class="flex items-center justify-between mb-6 bg-slate-50 rounded-xl px-4 py-3">
+            <div>
+                <p class="text-sm font-bold text-slate-700">قابلة للطماطم 🍅</p>
+                <p class="text-xs text-slate-400">تقنية Pomodoro — جلسات 25 دقيقة</p>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="new-task-pomodoro" checked />
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <button
+            id="modal-submit-btn"
+            class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-700 active:scale-95 transition-all text-sm"
+        >+ إضافة المهمة</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TOAST CONTAINER
+     ══════════════════════════════════════════════════════════ -->
+<div id="toast-container" aria-live="polite"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────────────────────
+//  ApiClient  ·  GET /api/priority  ·  POST /api/tasks
+// ─────────────────────────────────────────────────────────────
+const ApiClient = (() => {
+    const BASE_URL  = '/api';
+    const TOKEN_KEY = 'mdar_token';
+
+    const getToken   = () => localStorage.getItem(TOKEN_KEY);
+    const setToken   = (t) => localStorage.setItem(TOKEN_KEY, t);
+    const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+    const hasToken   = () => !!getToken();
+
+    const authHeaders = () => ({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+    });
+
+    const handleResponse = async (res) => {
+        if (res.status === 401) {
+            clearToken();
+            window.App?.showAuthOverlay?.();
+            throw new Error('انتهت صلاحية الجلسة. أعِد تسجيل الدخول.');
+        }
+        if (res.status === 204) return null;
+
+        let data;
+        try   { data = await res.json(); }
+        catch { data = {}; }
+
+        if (!res.ok) {
+            const msg = data.detail || data.title || data.message || `خطأ ${res.status}`;
+            const err = new Error(msg);
+            err.status = res.status;
+            err.data   = data;
+            throw err;
+        }
+        return data;
+    };
+
+    const buildUrl = (endpoint, params = {}) => {
+        const url = new URL(BASE_URL + endpoint, window.location.origin);
+        Object.entries(params).forEach(([k, v]) => {
+            if (v !== null && v !== undefined && v !== '') url.searchParams.append(k, v);
+        });
+        return url.toString();
+    };
+
+    const get  = (ep, params = {}) =>
+        fetch(buildUrl(ep, params), { headers: authHeaders() }).then(handleResponse);
+
+    const post = (ep, body = {}) =>
+        fetch(buildUrl(ep), {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(body)
+        }).then(handleResponse);
+
+    const patch = (ep) =>
+        fetch(buildUrl(ep), { method: 'PATCH', headers: authHeaders() }).then(handleResponse);
+
+    /**
+     * GET /api/priority
+     * Query params: contextTag, maxResults, includeWeightBreakdown
+     * Response: PriorityEngineResult
+     *   { currentPrayerPeriod, currentPrayerPeriodName,
+     *     tasks: PrioritizedTaskDto[], excludedEmergencyCount,
+     *     excludedContextMismatchCount, hasPrayerSchedule }
+     */
+    const getPrioritizedTasks = (contextTag = 'Anywhere', maxResults = 20) =>
+        get('/priority', {
+            contextTag,
+            maxResults,
+            includeWeightBreakdown: true
+        });
+
+    /**
+     * POST /api/tasks
+     * Body: CreateTaskRequest
+     * Response: TaskCreatedResponse
+     *   { task, initialPriorityWeight, initialWeightBreakdown, weightExplanation }
+     */
+    const createTask = (data) => post('/tasks', data);
+
+    /** PATCH /api/tasks/{id}/complete */
+    const completeTask = (id) => patch(`/tasks/${id}/complete`);
+
+    /** PATCH /api/tasks/{id}/emergency */
+    const toggleEmergency = (id) => patch(`/tasks/${id}/emergency`);
+
+    return { getToken, setToken, clearToken, hasToken,
+             get, post, patch,
+             getPrioritizedTasks, createTask, completeTask, toggleEmergency };
+})();
+
+
+// ─────────────────────────────────────────────────────────────
+//  App  ·  Daily Operations UI
+// ─────────────────────────────────────────────────────────────
+const App = (() => {
+
+    let state = {
+        tasks:         [],
+        currentPeriod: null,
+        contextFilter: 'Anywhere',
+        loading:       false
+    };
+
+    const PERIOD_META = {
+        AfterFajr:    { label:'بعد الفجر',  emoji:'🌙' },
+        Duha:         { label:'وقت الضحى',  emoji:'☀️' },
+        AfterDhuhr:   { label:'بعد الظهر',  emoji:'🌤' },
+        AfterAsr:     { label:'بعد العصر',  emoji:'🌿' },
+        AfterMaghrib: { label:'بعد المغرب', emoji:'🌅' },
+        AfterIsha:    { label:'بعد العشاء', emoji:'🌃' }
+    };
+
+    const PRIORITY_META = {
+        Critical: { label:'حرجة' },
+        High:     { label:'عالية' },
+        Medium:   { label:'متوسطة' },
+        Low:      { label:'منخفضة' }
+    };
+
+    const CONTEXT_META = {
+        Anywhere: { icon:'🌐' },
+        Home:     { icon:'🏠' },
+        Office:   { icon:'💼' },
+        Outside:  { icon:'🚶' },
+        Online:   { icon:'💻' }
+    };
+
+    // ── Init ────────────────────────────────────────────────────
+
+    function init() {
+        // يعمل بدون Backend — يعرض الواجهة ويحاول الاتصال بالـ API
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('auth-overlay').classList.add('hidden');
+
+        setInterval(() => {
+            const el = document.getElementById('live-clock');
+            if (el) el.textContent = new Date().toLocaleTimeString('ar-SA',
+                { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+        }, 1000);
+
+        loadTasks();
+        setInterval(loadTasks, 5 * 60 * 1000);
+        bindEvents();
+    }
+
+    // ── Data ────────────────────────────────────────────────────
+
+    async function loadTasks() {
+        if (state.loading) return;
+        state.loading = true;
+        showSkeleton();
+
+        // إذا لم يكن هناك توكن → وضع عرض بدون Backend
+        if (!ApiClient.hasToken()) {
+            state.loading = false;
+            renderOfflineState();
+            return;
+        }
+
+        try {
+            // GET /api/priority?contextTag=...&maxResults=20&includeWeightBreakdown=true
+            const data = await ApiClient.getPrioritizedTasks(state.contextFilter, 20);
+
+            state.tasks         = data.tasks            || [];
+            state.currentPeriod = data.currentPrayerPeriod;   // ← الحقل الصحيح
+
+            renderHeader(data.currentPrayerPeriod, data.currentPrayerPeriodName);
+            renderTasks(state.tasks);
+            renderStats(data);
+
+        } catch (err) {
+            // API غير متاح → وضع الانتظار بدلاً من رسالة خطأ
+            renderOfflineState();
+        } finally {
+            state.loading = false;
+        }
+    }
+
+    // ── Render Header ───────────────────────────────────────────
+
+    function renderHeader(period, periodName) {
+        const header = document.getElementById('period-header');
+        header.className = 'period-' + (period || 'Duha');
+
+        const meta = PERIOD_META[period] || {};
+        const el   = document.getElementById('period-display');
+        if (el) el.innerHTML = `
+            <span class="period-emoji">${meta.emoji || '⏰'}</span>
+            <div>
+                <div class="period-name">${periodName || meta.label || period || '...'}</div>
+                <div class="period-subtext">لوحة الأولويات الذكية</div>
+            </div>`;
+    }
+
+    // ── Render Stats ────────────────────────────────────────────
+
+    function renderStats(data) {
+        const total     = data.tasks?.length || 0;
+        const emergency = data.excludedEmergencyCount || 0;
+        const mismatch  = data.excludedContextMismatchCount || 0;
+        const el = document.getElementById('stats-bar');
+        if (!el) return;
+
+        el.innerHTML = `
+            <span class="text-xs text-slate-500">
+                <span class="font-bold text-slate-700">${total}</span> مهمة معروضة
+                ${emergency > 0 ? ` · <span class="text-red-500 font-bold">${emergency}</span> طوارئ مستبعدة` : ''}
+                ${mismatch  > 0 ? ` · <span class="text-amber-500">${mismatch}</span> غير ملائمة للسياق` : ''}
+                ${!data.hasPrayerSchedule ? ' · <span class="text-amber-500">⚠ لا يوجد جدول صلاة</span>' : ''}
+            </span>
+            <button onclick="App.refresh()"
+                class="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+                تحديث
+            </button>`;
+    }
+
+    // ── Render Tasks ────────────────────────────────────────────
+
+    function renderTasks(tasks) {
+        const container = document.getElementById('tasks-container');
+        if (!container) return;
+
+        if (!tasks || tasks.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">✅</span>
+                    <p class="text-lg font-bold text-slate-500">لا توجد مهام</p>
+                    <p class="text-sm text-slate-400 mt-1">أضف مهمتك الأولى بالزر الأخضر</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="tasks-grid">
+                ${tasks.map(renderCard).join('')}
+            </div>`;
+    }
+
+    function renderCard(task) {
+        const priority  = task.priority  || 'Medium';
+        const pLabel    = PRIORITY_META[priority]?.label || priority;
+        const ctxIcon   = CONTEXT_META[task.contextTag]?.icon || '🌐';
+        const rankClass = task.rank <= 3 ? `rank-${task.rank}` : 'rank-other';
+        const due       = formatDue(task.dueDate);
+        const period    = task.preferredPrayerPeriod
+            ? (PERIOD_META[task.preferredPrayerPeriod]?.emoji || '') + ' '
+            + (PERIOD_META[task.preferredPrayerPeriod]?.label || '')
+            : '';
+
+        return `
+        <div class="task-card priority-${priority}" id="card-${task.id}">
+
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="rank-badge ${rankClass}">${task.rank}</span>
+                    <span class="badge-${priority} text-xs font-bold px-2 py-0.5 rounded-full">
+                        ${pLabel}
+                    </span>
+                    ${task.isEmergency
+                        ? '<span class="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">🚨 طوارئ</span>'
+                        : ''}
+                </div>
+                <div class="flex items-center gap-1.5 text-slate-400">
+                    <span class="text-sm" title="${task.contextTag}">${ctxIcon}</span>
+                    ${task.isPomodoroCompatible
+                        ? '<span class="text-sm" title="قابلة للطماطم">🍅</span>'
+                        : ''}
+                </div>
+            </div>
+
+            <h3 class="font-bold text-slate-800 text-[0.95rem] leading-snug mb-2 line-clamp-2">
+                ${escapeHtml(task.title)}
+            </h3>
+
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                ${due
+                    ? `<span class="text-xs ${due.overdue ? 'text-red-500 font-bold' : 'text-slate-400'}">
+                          📅 ${due.text}
+                       </span>`
+                    : ''}
+                ${task.isPomodoroCompatible
+                    ? `<span class="text-xs text-slate-400">
+                          🍅 ${task.completedPomodoros ?? 0}/${task.estimatedPomodoros ?? '?'}
+                       </span>`
+                    : ''}
+                ${period ? `<span class="text-xs text-slate-400">${period}</span>` : ''}
+                <span class="weight-chip mr-auto">⚡ ${Math.round(task.priorityWeight)}</span>
+            </div>
+
+            ${task.weightBreakdown?.explanation
+                ? `<p class="text-xs text-slate-400 bg-slate-50 rounded-xl px-3 py-2 mb-3 leading-relaxed">
+                       ${escapeHtml(task.weightBreakdown.explanation)}
+                   </p>`
+                : ''}
+
+            <div class="flex gap-2 mt-auto pt-1">
+                ${task.isPomodoroCompatible
+                    ? `<button class="btn-start"
+                               onclick="App.startPomodoro('${task.id}','${escapeAttr(task.title)}')">
+                           ▶ ابدأ جلسة
+                       </button>`
+                    : ''}
+                <button class="btn-done" onclick="App.completeTask('${task.id}')">
+                    ✓ إنجاز
+                </button>
+            </div>
+        </div>`;
+    }
+
+    // ── Skeleton ────────────────────────────────────────────────
+
+    function showSkeleton() {
+        const container = document.getElementById('tasks-container');
+        if (!container) return;
+        const card = `
+            <div class="bg-white rounded-2xl p-4 border border-slate-100">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="skeleton w-6 h-6 rounded-full"></div>
+                    <div class="skeleton h-5 w-20 rounded-full"></div>
+                </div>
+                <div class="skeleton h-4 w-full mb-2 rounded-lg"></div>
+                <div class="skeleton h-4 w-2/3 mb-4 rounded-lg"></div>
+                <div class="flex gap-2">
+                    <div class="skeleton h-9 flex-1 rounded-xl"></div>
+                    <div class="skeleton h-9 flex-1 rounded-xl"></div>
+                </div>
+            </div>`;
+        container.innerHTML = `<div class="tasks-grid">${Array(6).fill(card).join('')}</div>`;
+    }
+
+    function renderErrorState() {
+        const c = document.getElementById('tasks-container');
+        if (!c) return;
+        c.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">⚠️</span>
+                <p class="text-lg font-bold text-slate-500">فشل تحميل المهام</p>
+                <button onclick="App.refresh()"
+                    class="mt-3 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold">
+                    إعادة المحاولة
+                </button>
+            </div>`;
+    }
+
+    function renderOfflineState() {
+        // يظهر عند غياب التوكن أو عدم توفر الـ API
+        const header = document.getElementById('period-header');
+        if (header) header.className = 'period-AfterIsha';
+        const display = document.getElementById('period-display');
+        if (display) display.innerHTML = `
+            <span class="period-emoji">🔄</span>
+            <div>
+                <div class="period-name">جاري الاتصال...</div>
+                <div class="period-subtext">في انتظار الاتصال بـ Mdar API</div>
+            </div>`;
+
+        const stats = document.getElementById('stats-bar');
+        if (stats) stats.innerHTML = `
+            <span class="text-xs text-slate-400">يعمل مدار في وضع العرض — أدخل رمز JWT للمزامنة</span>
+            <button onclick="App.showAuthOverlay()"
+                class="text-xs text-slate-500 hover:text-slate-700 font-bold underline">
+                تسجيل الدخول
+            </button>`;
+
+        const c = document.getElementById('tasks-container');
+        if (!c) return;
+        c.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon" style="animation:spin 2s linear infinite;display:inline-block">🔄</span>
+                <p class="text-lg font-bold text-slate-500 mt-2">جاري الاتصال...</p>
+                <p class="text-sm text-slate-400 mt-1 mb-4">
+                    مدار يعمل للعرض — الـ API غير متاح حالياً
+                </p>
+                <button onclick="App.showAuthOverlay()"
+                    class="px-5 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-colors">
+                    🔐 أدخل رمز JWT
+                </button>
+                <button onclick="App.refresh()"
+                    class="mt-2 px-5 py-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">
+                    إعادة المحاولة
+                </button>
+            </div>`;
+    }
+
+    // ── Modal ───────────────────────────────────────────────────
+
+    function openModal() {
+        document.getElementById('modal-backdrop').classList.add('visible');
+        document.getElementById('modal-sheet').classList.add('visible');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => document.getElementById('new-task-title')?.focus(), 350);
+    }
+
+    function closeModal() {
+        document.getElementById('modal-backdrop').classList.remove('visible');
+        document.getElementById('modal-sheet').classList.remove('visible');
+        document.body.style.overflow = '';
+        resetForm();
+    }
+
+    function resetForm() {
+        document.getElementById('new-task-title').value    = '';
+        document.getElementById('new-task-due').value      = '';
+        document.getElementById('new-task-period').value   = '';
+        document.getElementById('new-task-context').value  = 'Anywhere';
+        document.getElementById('new-task-pomodoros').value = '';
+        document.getElementById('new-task-pomodoro').checked = true;
+        setSelectedPriority('Medium');
+    }
+
+    function setSelectedPriority(p) {
+        document.querySelectorAll('.priority-btn').forEach(btn =>
+            btn.classList.toggle('selected', btn.dataset.priority === p));
+    }
+
+    // ── Submit: POST /api/tasks ─────────────────────────────────
+
+    async function submitQuickAdd() {
+        const title = document.getElementById('new-task-title').value.trim();
+        if (!title) {
+            showToast('اكتب عنوان المهمة أولاً', 'error');
+            document.getElementById('new-task-title').focus();
+            return;
+        }
+
+        const priority   = document.querySelector('.priority-btn.selected')?.dataset.priority || 'Medium';
+        const pomodoro   = document.getElementById('new-task-pomodoro').checked;
+        const dueRaw     = document.getElementById('new-task-due').value;
+        const period     = document.getElementById('new-task-period').value  || null;
+        const contextTag = document.getElementById('new-task-context').value || 'Anywhere';
+        const pomodorosRaw = document.getElementById('new-task-pomodoros').value;
+        const estimatedPomodoros = pomodorosRaw ? parseInt(pomodorosRaw, 10) : null;
+
+        // Body يطابق تماماً CreateTaskRequest
+        const body = {
+            title,
+            priority,
+            isPomodoroCompatible:  pomodoro,
+            contextTag,
+            preferredPrayerPeriod: period,
+            dueDate:               dueRaw || null,
+            estimatedPomodoros:    estimatedPomodoros
+        };
+
+        const btn = document.getElementById('modal-submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ جارٍ الإضافة...';
+
+        try {
+            // POST /api/tasks → TaskCreatedResponse
+            const result = await ApiClient.createTask(body);
+
+            closeModal();
+            showToast(
+                `✓ تمت الإضافة: ${title} · وزن: ${Math.round(result.initialPriorityWeight)}`,
+                'success'
+            );
+            setTimeout(loadTasks, 300);
+
+        } catch (err) {
+            showToast(err.message || 'فشلت الإضافة', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '+ إضافة المهمة';
+        }
+    }
+
+    // ── Task Actions ────────────────────────────────────────────
+
+    async function completeTask(taskId) {
+        const card = document.getElementById(`card-${taskId}`);
+        try {
+            await ApiClient.completeTask(taskId);   // PATCH /api/tasks/{id}/complete
+            if (card) {
+                card.classList.add('completing');
+                setTimeout(() => {
+                    card.remove();
+                    if (!document.querySelector('.task-card'))
+                        document.getElementById('tasks-container').innerHTML = `
+                            <div class="empty-state">
+                                <span class="empty-icon">✅</span>
+                                <p class="text-lg font-bold text-slate-500">أنجزت كل مهامك!</p>
+                            </div>`;
+                }, 300);
+            }
+            showToast('✓ أحسنت! تم الإنجاز', 'success');
+        } catch (err) {
+            showToast(err.message || 'فشل تحديث الحالة', 'error');
+        }
+    }
+
+    function startPomodoro(taskId, taskTitle) {
+        showToast(`🍅 بدأت جلسة طماطم: ${taskTitle}`, 'info');
+    }
+
+    // ── Context Filter ──────────────────────────────────────────
+
+    function setContextFilter(ctx) {
+        state.contextFilter = ctx;
+        document.querySelectorAll('.ctx-chip').forEach(c =>
+            c.classList.toggle('active', c.dataset.ctx === ctx));
+        loadTasks();
+    }
+
+    function refresh() { loadTasks(); }
+
+    // ── Auth ────────────────────────────────────────────────────
+
+    function showAuthOverlay() {
+        document.getElementById('auth-overlay').classList.remove('hidden');
+        document.getElementById('app').classList.add('hidden');
+    }
+
+    function handleTokenSubmit() {
+        const token = document.getElementById('token-input').value.trim();
+        if (!token) { showToast('أدخل رمز JWT أولاً', 'error'); return; }
+        ApiClient.setToken(token);
+        document.getElementById('auth-overlay').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        loadTasks();
+    }
+
+    // ── Toast ───────────────────────────────────────────────────
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'toastOut .3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    // ── Events ──────────────────────────────────────────────────
+
+    function bindEvents() {
+        document.getElementById('fab-btn')?.addEventListener('click', openModal);
+        document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
+        document.getElementById('modal-submit-btn')?.addEventListener('click', submitQuickAdd);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+        document.querySelectorAll('.priority-btn').forEach(btn =>
+            btn.addEventListener('click', () => setSelectedPriority(btn.dataset.priority)));
+        document.getElementById('new-task-title')?.addEventListener('keydown', e => {
+            if (e.key === 'Enter') submitQuickAdd();
+        });
+    }
+
+    // ── Utils ───────────────────────────────────────────────────
+
+    function formatDue(dateStr) {
+        if (!dateStr) return null;
+        const due   = new Date(dateStr + 'T00:00:00');
+        const today = new Date(); today.setHours(0,0,0,0);
+        const diff  = Math.round((due - today) / 86400000);
+        if (diff < 0)  return { text:`متأخرة ${Math.abs(diff)} يوم`, overdue:true  };
+        if (diff === 0) return { text:'اليوم',  overdue:false };
+        if (diff === 1) return { text:'غداً',   overdue:false };
+        if (diff <= 7)  return { text:`بعد ${diff} أيام`, overdue:false };
+        return { text:due.toLocaleDateString('ar-SA',{month:'short',day:'numeric'}), overdue:false };
+    }
+
+    function escapeHtml(str) {
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(str || ''));
+        return d.innerHTML;
+    }
+
+    function escapeAttr(str) {
+        return (str || '').replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+    }
+
+    // ── Public ──────────────────────────────────────────────────
+    return {
+        init, refresh,
+        completeTask, startPomodoro,
+        setContextFilter,
+        openModal, closeModal, submitQuickAdd,
+        handleTokenSubmit, showAuthOverlay, showToast
+    };
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);
+</script>
+
+</body>
+</html>
+<!-- [مدار 2 — v1.0.0 — تدشين رسمي — 2026-03-14] -->
+<!-- بُني بـ: Claude Code + Anthropic API -->
+<!-- المطوّر: د. محمد — Kaf Strategic -->

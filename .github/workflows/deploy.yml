@@ -1,0 +1,36 @@
+name: مدار 2 — CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: إعداد .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: استعادة الحزم
+      run: dotnet restore
+
+    - name: بناء المشروع
+      run: dotnet build --no-restore -c Release
+
+    - name: فحص الصحة
+      run: |
+        dotnet run --project Mdar.API &
+        sleep 8
+        curl -f http://localhost:5000/api/health/status || exit 1
+      env:
+        ConnectionStrings__DefaultConnection: ${{ secrets.TIDB_CONNECTION_STRING }}
+        Anthropic__ApiKey: ${{ secrets.ANTHROPIC_API_KEY }}
+        Jwt__Key: ${{ secrets.JWT_KEY }}
+        ASPNETCORE_ENVIRONMENT: Production
