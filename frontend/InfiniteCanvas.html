@@ -2037,7 +2037,7 @@ const InfiniteCanvas = (() => {
       window.MdarSync.init({
         boardId,
         token,
-        apiBase:  '/api',
+        apiBase:  'https://hearty-adventure-production-aba1.up.railway.app/api',
         onStatusChange: status => updateSyncIndicator(status),
         onRemoteChange: change => applyRemoteChange(change),
         onConflict:     (local, remote) => showConflictModal(local, remote),
