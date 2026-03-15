@@ -4,7 +4,11 @@ WORKDIR /src
 
 COPY . .
 
-RUN cd Mdar.API && dotnet publish -c Release -o /app/publish
+WORKDIR /src/Mdar.API
+
+RUN dotnet restore
+
+RUN dotnet publish -c Release -o /app/publish
 
 
 
@@ -15,7 +19,5 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 ENV ASPNETCORE_URLS=http://+:$PORT
-
-EXPOSE $PORT
 
 ENTRYPOINT ["dotnet", "Mdar.API.dll"]
