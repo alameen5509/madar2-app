@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 //  Mdar Personal ERP — ASP.NET Core Web API Entry Point
 // ═══════════════════════════════════════════════════════════════════════════
 
-Console.WriteLine("=== مدار 2 v1.1.0 - AuthController loaded ===");
+Console.WriteLine("MDAR2 v1.1.0 STARTING");
 
 var builder = WebApplication.CreateBuilder(args);
 
