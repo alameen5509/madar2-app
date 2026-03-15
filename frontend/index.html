@@ -271,19 +271,30 @@ body { font-family: 'Cairo', sans-serif; }
     <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
         <div class="text-5xl mb-4">🔐</div>
         <h1 class="text-2xl font-bold text-slate-800 mb-1">مرحباً في مدار</h1>
-        <p class="text-slate-500 text-sm mb-6">أدخل رمز JWT للمتابعة</p>
+        <p class="text-slate-500 text-sm mb-6">سجّل دخولك للمتابعة</p>
         <input
-            id="token-input"
-            type="text"
-            placeholder="Bearer Token..."
+            id="login-email"
+            type="email"
+            placeholder="البريد الإلكتروني"
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 mb-3 focus:outline-none focus:ring-2 focus:ring-slate-400 ltr"
+            dir="ltr"
+            value="admin@mdar2.com"
+            onkeydown="if(event.key==='Enter') App.handleLoginSubmit()"
+        />
+        <input
+            id="login-password"
+            type="password"
+            placeholder="كلمة المرور"
             class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 mb-4 focus:outline-none focus:ring-2 focus:ring-slate-400 ltr"
             dir="ltr"
-            onkeydown="if(event.key==='Enter') App.handleTokenSubmit()"
+            onkeydown="if(event.key==='Enter') App.handleLoginSubmit()"
         />
         <button
-            onclick="App.handleTokenSubmit()"
+            id="login-btn"
+            onclick="App.handleLoginSubmit()"
             class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition-colors"
         >دخول</button>
+        <p id="login-error" class="text-red-500 text-sm mt-3 hidden"></p>
     </div>
 </div>
 
@@ -972,12 +983,46 @@ const App = (() => {
     }
 
     function handleTokenSubmit() {
-        const token = document.getElementById('token-input').value.trim();
-        if (!token) { showToast('أدخل رمز JWT أولاً', 'error'); return; }
-        ApiClient.setToken(token);
-        document.getElementById('auth-overlay').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        loadTasks();
+        // kept for backward compatibility
+        handleLoginSubmit();
+    }
+
+    async function handleLoginSubmit() {
+        const email    = document.getElementById('login-email')?.value.trim();
+        const password = document.getElementById('login-password')?.value.trim();
+        const errEl    = document.getElementById('login-error');
+        const btn      = document.getElementById('login-btn');
+
+        if (!email || !password) {
+            errEl.textContent = 'أدخل البريد الإلكتروني وكلمة المرور';
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        btn.disabled   = true;
+        btn.textContent = 'جارٍ الدخول...';
+        errEl.classList.add('hidden');
+
+        try {
+            const res = await fetch('https://madar2-app-production.up.railway.app/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'فشل تسجيل الدخول');
+
+            ApiClient.setToken(data.token);
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            loadTasks();
+        } catch (err) {
+            errEl.textContent = err.message;
+            errEl.classList.remove('hidden');
+        } finally {
+            btn.disabled    = false;
+            btn.textContent = 'دخول';
+        }
     }
 
     // ── Toast ───────────────────────────────────────────────────
@@ -1038,7 +1083,7 @@ const App = (() => {
         completeTask, startPomodoro,
         setContextFilter,
         openModal, closeModal, submitQuickAdd,
-        handleTokenSubmit, showAuthOverlay, showToast
+        handleTokenSubmit, handleLoginSubmit, showAuthOverlay, showToast
     };
 })();
 

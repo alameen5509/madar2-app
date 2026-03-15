@@ -1,6 +1,7 @@
 using Mdar.API.Extensions;
 using Mdar.API.Hubs;
 using Mdar.API.Middleware;
+using Mdar.Core.Entities.Identity;
 using Mdar.Infrastructure.Data;
 using Mdar.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -108,13 +109,21 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<CanvasHub>("/hubs/canvas");
 
-// ─── Database Migration التلقائي (بيئة التطوير فقط) ──────────────────────
+// ─── Seed: إنشاء Admin افتراضي إذا لم يوجد أي مستخدم ─────────────────────
 
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    if (!db.Users.Any())
+    {
+        db.Users.Add(new User
+        {
+            FullName     = "مدير النظام",
+            Email        = "admin@mdar2.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Mdar2@2026")
+        });
+        db.SaveChanges();
+    }
 }
 
 await app.RunAsync();
