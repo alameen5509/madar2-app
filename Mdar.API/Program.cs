@@ -76,16 +76,15 @@ var app = builder.Build();
 // [1] معالج الأخطاء العالمي — يجب أن يكون الأول دائماً
 app.UseGlobalExceptionHandler();
 
-// [2] Swagger — في بيئة التطوير فقط
-if (app.Environment.IsDevelopment())
+// [2] Swagger — في جميع البيئات
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Mdar API v1");
-        options.RoutePrefix = string.Empty; // Swagger على الجذر /
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Mdar API v1");
+    options.RoutePrefix = "swagger";
+});
+
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 // [3] HTTPS Redirect
 app.UseHttpsRedirection();
