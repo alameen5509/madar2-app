@@ -88,7 +88,10 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapGet("/api/health/status", () => Results.Ok(new { status = "ok" }));
 
 // [3] HTTPS Redirect
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // [4] CORS — قبل Authentication
 app.UseCors("MdarCorsPolicy");
