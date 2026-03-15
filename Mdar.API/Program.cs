@@ -85,6 +85,7 @@ app.UseSwaggerUI(options =>
 });
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
+app.MapGet("/api/health/status", () => Results.Ok(new { status = "ok" }));
 
 // [3] HTTPS Redirect
 app.UseHttpsRedirection();
