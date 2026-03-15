@@ -1,3 +1,4 @@
+using Mdar.Core.Entities.Identity;
 using Mdar.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,41 +11,73 @@ namespace Mdar.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AppDbContext db, IConfiguration config) : ControllerBase
+public class AuthController : ControllerBase
 {
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest req)
-    {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == req.Email && !u.IsDeleted);
-        if (user is null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
-            return Unauthorized(new { message = "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
+    private readonly AppDbContext _db;
+    private readonly IConfiguration _config;
 
-        var jwtSection = config.GetSection("Jwt");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiry = DateTime.UtcNow.AddMinutes(jwtSection.GetValue<int>("ExpiryMinutes", 1440));
+    public AuthController(AppDbContext db, IConfiguration config)
+    {
+        _db     = db;
+        _config = config;
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.Email == dto.Email && !u.IsDeleted);
+
+        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            return Unauthorized(new { message = "بيانات غير صحيحة" });
+
+        var token = GenerateJwtToken(user);
+        return Ok(new { token, user = new { user.Id, user.Email, user.FullName } });
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        if (await _db.Users.AnyAsync(u => u.Email == dto.Email))
+            return BadRequest(new { message = "البريد مستخدم بالفعل" });
+
+        var user = new User
+        {
+            FullName     = dto.FullName ?? dto.Email,
+            Email        = dto.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+        };
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync();
+
+        var token = GenerateJwtToken(user);
+        return Ok(new { token, user = new { user.Id, user.Email, user.FullName } });
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var key   = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "mdar2-secret-key-2026-min32chars!"));
+        var creds  = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiry = DateTime.UtcNow.AddMinutes(
+            _config.GetValue<int>("Jwt:ExpiryMinutes", 1440));
 
         var token = new JwtSecurityToken(
-            issuer:   jwtSection["Issuer"],
-            audience: jwtSection["Audience"],
+            issuer:             _config["Jwt:Issuer"],
+            audience:           _config["Jwt:Audience"],
             claims:
             [
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("name", user.FullName)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email,           user.Email),
+                new Claim(ClaimTypes.Name,            user.FullName)
             ],
-            expires:  expiry,
+            expires:            expiry,
             signingCredentials: creds
         );
 
-        return Ok(new
-        {
-            token   = new JwtSecurityTokenHandler().WriteToken(token),
-            expires = expiry,
-            name    = user.FullName,
-            email   = user.Email
-        });
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
 
-public record LoginRequest(string Email, string Password);
+public record LoginDto(string Email, string Password);
+public record RegisterDto(string Email, string Password, string? FullName);
