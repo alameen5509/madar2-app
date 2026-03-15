@@ -20,7 +20,7 @@ const MdarSync = (() => {
   let cfg = {
     boardId:        null,
     token:          null,
-    apiBase:        'https://hearty-adventure-production-aba1.up.railway.app/api',
+    apiBase:        'https://madar2-app-production.up.railway.app/api',
     sessionId:      null,
     onRemoteChange: null,  // callback(change) عند استقبال تغيير من جلسة أخرى
     onConflict:     null,  // callback(local, remote) عند تعارض
