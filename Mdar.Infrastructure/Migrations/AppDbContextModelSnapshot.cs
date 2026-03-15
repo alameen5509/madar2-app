@@ -602,6 +602,13 @@ namespace Mdar.Infrastructure.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("varchar(512)");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasDefaultValue("user");
+
                     b.Property<int>("PomodorosBeforeLongBreak")
                         .HasColumnType("int");
 

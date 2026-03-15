@@ -92,7 +92,7 @@ app.UseSwaggerUI(options =>
 });
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
-app.MapGet("/api/health/status", () => Results.Ok(new { status = "ok" }));
+// /api/health/status مُعالَج بواسطة HealthController
 
 // [3] HTTPS Redirect
 if (app.Environment.IsDevelopment())
@@ -116,6 +116,10 @@ app.MapHub<CanvasHub>("/hubs/canvas");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // تطبيق الـ migrations تلقائياً عند الـ deploy
+    db.Database.Migrate();
+
     if (!db.Users.Any())
     {
         db.Users.Add(new User

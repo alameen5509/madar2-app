@@ -38,6 +38,9 @@ public class User : BaseEntity
     /// </summary>
     public string TimeZone { get; set; } = "Asia/Riyadh";
 
+    /// <summary>دور المستخدم في النظام: "user" أو "admin"</summary>
+    public string Role { get; set; } = "user";
+
     // ─── إعدادات نظام الطماطم (Pomodoro Settings) ───────────────────────────
 
     /// <summary>
