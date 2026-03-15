@@ -49,13 +49,17 @@ builder.Services.AddJwtAuthentication(builder.Configuration); // JWT Bearer
 // ─── CORS (اضبطه حسب عنوان تطبيق الـ Frontend) ───────────────────────────
 
 builder.Services.AddCors(options =>
-    options.AddPolicy("MdarCorsPolicy", policy =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
         policy.WithOrigins(
-                builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-                ?? ["http://localhost:3000"])
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials())); // ← مطلوب لـ SignalR WebSocket
+            "https://madar22-app.vercel.app",
+            "https://madar2-app.vercel.app"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader();
+    });
+});
 
 // ─── HTTP Client (لجلب أوقات الصلاة من API خارجي مستقبلاً) ───────────────
 builder.Services.AddHttpClient();
@@ -94,7 +98,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // [4] CORS — قبل Authentication
-app.UseCors("MdarCorsPolicy");
+app.UseCors();
 
 // [5] Authentication → ثم Authorization (الترتيب ضروري)
 app.UseAuthentication();
