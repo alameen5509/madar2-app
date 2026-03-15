@@ -18,6 +18,10 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-ENV ASPNETCORE_URLS=http://+:$PORT
+ENV ASPNETCORE_URLS=http://+:8080
+
+ENV PORT=8080
+
+WORKDIR /app
 
 ENTRYPOINT ["dotnet", "Mdar.API.dll"]
